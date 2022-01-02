@@ -1,0 +1,22 @@
+{
+  "name": "star-to-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/star-to/star-to-server.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/star-to/star-to-server/issues"
+  },
+  "homepage": "https://github.com/star-to/star-to-server#readme",
+  "devDependencies": {
+    "express": "^4.17.2"
+  }
+}
