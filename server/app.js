@@ -5,7 +5,6 @@ const app = express();
 require("dotenv").config();
 
 const PORT = 7070;
-const state = "200";
 
 app.use(
   cors({
@@ -15,7 +14,7 @@ app.use(
 );
 
 app.get("/api/login/check", (req, res) => {
-  res.json({ isLogin: false });
+  // res.json({ isLogin: false });
 });
 
 app.get("/api/login/naver", (req, res) => {
