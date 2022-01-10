@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon -e js --exec npm run app",
+    "app": "bash ./script.sh && node server/app.js"
   },
   "repository": {
     "type": "git",
@@ -17,7 +18,8 @@
   },
   "homepage": "https://github.com/star-to/star-to-server#readme",
   "devDependencies": {
-    "express": "^4.17.2"
+    "express": "^4.17.2",
+    "prettier": "^2.5.1"
   },
   "dependencies": {
     "axios": "^0.24.0",

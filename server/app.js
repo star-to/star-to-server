@@ -14,7 +14,7 @@ app.use(
 );
 
 app.get("/api/login/check", (req, res) => {
-  res.json({ isLogin: false });
+  // res.json({ isLogin: false });
 });
 
 app.get("/api/login/naver", (req, res) => {
