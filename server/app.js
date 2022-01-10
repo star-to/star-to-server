@@ -14,7 +14,7 @@ app.use(
 );
 
 app.get("/api/login/check", (req, res) => {
-  // res.json({ isLogin: false });
+  res.json({ isLogin: false });
 });
 
 app.get("/api/login/naver", (req, res) => {
@@ -34,10 +34,20 @@ app.get("/api/login/naver/callback", (req, res) => {
       "X-Naver-Client-Secret": process.env.NAVER_CLIENT_SECRETS,
     },
   })
-    .then((data) => {
-      //TODO: db 저장 코드 추가
-
-      res.redirect("http://localhost:9000/");
+    .then(({ data }) => {
+      console.log(data);
+      axios({
+        method: "get",
+        url: "https://openapi.naver.com/v1/nid/me",
+        headers: { Authorization: `Bearer ${data.access_token}` },
+      })
+        .then((user) => {
+          //TODO: db 저장 코드 추가2
+          res.redirect("http://localhost:9000/");
+        })
+        .then((err) => {
+          console.log(err);
+        });
     })
     .catch((error) => {
       console.log(error);
@@ -61,7 +71,6 @@ app.get("/api/login/kakao/callback", (req, res) => {
     data: `grant_type=authorization_code&client_id=${process.env.KAKAO_CLIENT_ID}&redirect_uri=${process.env.KAKAO_REDIRECT_URL}&code=${code}&client_secret=${process.env.KAKAO_CLIENT_SECRET}`,
   })
     .then(({ data }) => {
-      //TODO: db저장코드 있어야함
       axios({
         method: "get",
         url: "https://kapi.kakao.com/v2/user/me",
@@ -71,12 +80,12 @@ app.get("/api/login/kakao/callback", (req, res) => {
         },
       })
         .then((user) => {
-          console.log(user);
+          //TODO: db저장코드 있어야함
+          res.redirect("http://localhost:9000/");
         })
         .catch((err) => {
           console.log(err);
         });
-      // res.redirect("http://localhost:9000/");
     })
     .catch((error) => {
       console.log(error);
