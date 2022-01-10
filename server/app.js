@@ -5,7 +5,6 @@ const app = express();
 require("dotenv").config();
 
 const PORT = 7070;
-const state = "200";
 
 app.use(
   cors({
@@ -19,13 +18,13 @@ app.get("/api/login/check", (req, res) => {
 });
 
 app.get("/api/login/naver", (req, res) => {
-  const api_url = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${process.env.NAVER_CLIENT_ID}&redirect_uri=${process.env.NAVER_REDIRECT_URL}&state=${state}`;
+  const api_url = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${process.env.NAVER_CLIENT_ID}&redirect_uri=${process.env.NAVER_REDIRECT_URL}&state=${process.env.STATE}`;
   res.send(api_url);
 });
 
 app.get("/api/login/naver/callback", (req, res) => {
   const { code, state } = req.query;
-  const api_url = `https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&client_id=${process.env.NAVER_CLIENT_ID}&client_secret=${process.env.NAVER_CLIENT_SECRETS}&redirect_uri=${process.env.NAVER_REDIRECT_URL}&code=${code}&state=${state}`;
+  const api_url = `https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&client_id=${process.env.NAVER_CLIENT_ID}&client_secret=${process.env.NAVER_CLIENT_SECRETS}&redirect_uri=${process.env.NAVER_REDIRECT_URL}&code=${code}&state=${process.env.STATE}`;
 
   axios({
     method: "get",
@@ -36,7 +35,48 @@ app.get("/api/login/naver/callback", (req, res) => {
     },
   })
     .then((data) => {
+      //TODO: db 저장 코드 추가
+
       res.redirect("http://localhost:9000/");
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+});
+
+app.get("/api/login/kakao", (req, res) => {
+  const api_url = `https://kauth.kakao.com/oauth/authorize?client_id=${process.env.KAKAO_CLIENT_ID}&redirect_uri=${process.env.KAKAO_REDIRECT_URL}&response_type=code&state=${process.env.STATE}`;
+  res.send(api_url);
+});
+
+app.get("/api/login/kakao/callback", (req, res) => {
+  const { code, state } = req.query;
+  const api_url = "https://kauth.kakao.com/oauth/token";
+  axios({
+    method: "post",
+    url: api_url,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    data: `grant_type=authorization_code&client_id=${process.env.KAKAO_CLIENT_ID}&redirect_uri=${process.env.KAKAO_REDIRECT_URL}&code=${code}&client_secret=${process.env.KAKAO_CLIENT_SECRET}`,
+  })
+    .then(({ data }) => {
+      //TODO: db저장코드 있어야함
+      axios({
+        method: "get",
+        url: "https://kapi.kakao.com/v2/user/me",
+        headers: {
+          Authorization: `Bearer ${data.access_token}`,
+          "Content-type": "application/x-www-form-urlencoded",
+        },
+      })
+        .then((user) => {
+          console.log(user);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      // res.redirect("http://localhost:9000/");
     })
     .catch((error) => {
       console.log(error);
