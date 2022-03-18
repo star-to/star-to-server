@@ -5,8 +5,6 @@ const session = require("express-session");
 const app = express();
 require("dotenv").config();
 
-const PORT = 7070;
-
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -59,6 +57,7 @@ app.get("/api/login/naver/callback", (req, res) => {
       })
         .then(({ data }) => {
           //TODO: db 저장 코드 추가2
+          console.log(data);
           req.session.user = data.response.id;
           res.redirect(process.env.HOST_NAME);
         })
@@ -100,13 +99,13 @@ app.get("/api/login/kakao/callback", (req, res) => {
       })
         .then(({ data }) => {
           //TODO: db저장코드 있어야함
+          console.log(data);
           req.session.user = data.id;
           res.redirect(process.env.HOST_NAME);
         })
         .catch((err) => {
           console.log(err);
         });
-      // res.redirect("http://localhost:9000/");
     })
     .catch((error) => {
       console.log(error);
@@ -151,6 +150,4 @@ app.get("/api/my-review", (req, res) => {
   res.send(test);
 });
 
-app.listen(PORT, () => {
-  console.log("listenning port 7070");
-});
+module.exports = app;
