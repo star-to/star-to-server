@@ -1,4 +1,4 @@
-require("./db");
+// require("./db");
 const app = require("./app");
 
 const PORT = 7070;
