@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon -e js --exec npm run app",
-    "app": "bash ./script.sh && node server/app.js"
+    "app": "bash ./script.sh",
+    "build": "npm install | nodemon server/init.js"
   },
   "repository": {
     "type": "git",
@@ -25,6 +26,8 @@
     "axios": "^0.24.0",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
+    "express-session": "^1.17.2",
+    "mysql": "^2.18.1",
     "nodemon": "^2.0.15"
   }
 }
