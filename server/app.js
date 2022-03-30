@@ -8,6 +8,8 @@ const {
   getCheckAutoLogin,
   getNaverLogin,
   naverLoginCallBack,
+  getKakaoLogin,
+  kakaoLoginCallback,
 } = require("./controller");
 const { extractUserDevice } = require("./util");
 
@@ -32,12 +34,9 @@ app.get("/api/login/naver", getNaverLogin);
 
 app.get("/api/login/naver/callback", naverLoginCallBack);
 
-app.get("/api/login/kakao", (req, res) => {
-  const api_url = `https://kauth.kakao.com/oauth/authorize?client_id=${process.env.KAKAO_CLIENT_ID}&redirect_uri=${process.env.KAKAO_REDIRECT_URL}&response_type=code&state=${process.env.STATE}`;
-  res.send(api_url);
-});
+app.get("/api/login/kakao", getKakaoLogin);
 
-app.get("/api/login/kakao/callback");
+app.get("/api/login/kakao/callback", kakaoLoginCallback);
 
 app.get("/api/my-review", (req, res) => {
   //TODO: 날짜순으로 정렬해서 응답 줘야 함!
