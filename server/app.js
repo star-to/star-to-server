@@ -11,6 +11,15 @@ const {
   naverLoginCallBack,
   getKakaoLogin,
   kakaoLoginCallback,
+} = require("./controller");
+const { extractUserDevice } = require("./util");
+
+const {
+  getCheckAutoLogin,
+  getNaverLogin,
+  naverLoginCallBack,
+  getKakaoLogin,
+  kakaoLoginCallback,
   postCreatePlace,
 } = require("./controller");
 const { extractUserDevice } = require("./util");
