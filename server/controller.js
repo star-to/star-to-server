@@ -168,13 +168,20 @@ const kakaoLoginCallback = async (req, res) => {
 const postCreatePlace = (req, res) => {
   const placeList = req.body;
 
-  const query = placeList.reduce((acc, cur) => {
-    acc += `INSERT IGNORE INTO place(place_id, position_x, position_y, place_name, place_url, address, category_name) VALUES('${cur.id}', ${cur.x}, ${cur.y}, '${cur["place_name"]}','${cur["place_url"]}', '${cur["road_address_name"]}' ,'${cur["category_group_name"]}');`;
-    return acc;
-  }, "");
+  const query = placeList.reduce(
+    (acc, cur) => {
+      acc.insert += `INSERT IGNORE INTO place(place_id, position_x, position_y, place_name, place_url, address, category_name) VALUES('${cur.id}', ${cur.x}, ${cur.y}, '${cur["place_name"]}','${cur["place_url"]}', '${cur["road_address_name"]}' ,'${cur["category_group_name"]}');`;
+      acc.select += `SELECT place_id,star_average from place where place_id='${cur.id}';`;
+      return acc;
+    },
+    { insert: "", select: "" }
+  );
 
-  return sendQuery(query, (result) => {
-    return res.status(200);
+  return sendQuery(query.insert, () => {
+    return sendQuery(query.select, (result) => {
+      const resultArr = Array.from(result).map((e) => e[0]);
+      return res.json({ result: resultArr });
+    });
   });
 };
 

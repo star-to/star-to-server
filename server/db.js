@@ -15,7 +15,10 @@ const pool = mysql.createPool({
 
 function sendQuery(query, callback = null) {
   pool.getConnection((err, connection) => {
-    if (err) throw "db connection에 실패했습니다.";
+    if (err) {
+      connection.rollback();
+      throw "db connection에 실패했습니다.";
+    }
     connection.query(query, (error, results, fields) => {
       if (error) throw `${query}가 잘못됐습니다`;
       if (!callback) return;
