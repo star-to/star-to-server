@@ -74,7 +74,7 @@ const naverLoginCallBack = (req, res) => {
                 result[0]["access_device"] === userDevice;
 
               if (!equalDevice) {
-                const deleteQuery = `delete from user where user_id='${result[0]["user_id"]}'`;
+                const deleteQuery = `delete from user where user_id=${result[0]["user_id"]}`;
                 return sendQuery(deleteQuery, (result) => {
                   return res.redirect(process.env.HOST_NAME);
                 });
@@ -171,17 +171,32 @@ const postCreatePlace = (req, res) => {
   const query = placeList.reduce(
     (acc, cur) => {
       acc.insert += `INSERT IGNORE INTO place(place_id, position_x, position_y, place_name, place_url, address, category_name) VALUES('${cur.id}', ${cur.x}, ${cur.y}, '${cur["place_name"]}','${cur["place_url"]}', '${cur["road_address_name"]}' ,'${cur["category_group_name"]}');`;
-      acc.select += `SELECT place_id,star_average from place where place_id='${cur.id}';`;
+      acc.select += `SELECT place_id, COUNT(*) as review_count, AVG(star) as star from info where place_id='${cur.id}';`;
       return acc;
     },
     { insert: "", select: "" }
   );
 
+  const updateViewQuery = `alter view info as select B.review_id, B.place_id, B.user_id, B.star  from place A RIGHT JOIN review B on A.place_id = B.place_id;`;
+
   return sendQuery(query.insert, () => {
-    return sendQuery(query.select, (result) => {
-      const resultArr = Array.from(result).map((e) => e[0]);
-      return res.json({ result: resultArr });
+    return sendQuery(updateViewQuery, () => {
+      return sendQuery(query.select, (result) => {
+        const resultArr = Array.from(result).map((e) => e[0]);
+        return res.json({ result: resultArr });
+      });
     });
+  });
+};
+
+const getUserBookmark = (req, res) => {
+  const userId = req.session.user;
+  console.log(userId);
+  const query = `select place_id from bookmark where user_id =${userId}`;
+
+  return sendQuery(query, (result) => {
+    const resultArr = Array.from(result).map((e) => e["place_id"]);
+    return res.json({ result: resultArr });
   });
 };
 
@@ -192,4 +207,5 @@ module.exports = {
   getKakaoLogin,
   kakaoLoginCallback,
   postCreatePlace,
+  getUserBookmark,
 };

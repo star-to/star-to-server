@@ -12,6 +12,7 @@ const {
   getKakaoLogin,
   kakaoLoginCallback,
   postCreatePlace,
+  getUserBookmark,
 } = require("./controller");
 const { extractUserDevice } = require("./util");
 
@@ -41,6 +42,8 @@ app.get("/api/login/naver/callback", naverLoginCallBack);
 app.get("/api/login/kakao", getKakaoLogin);
 
 app.get("/api/login/kakao/callback", kakaoLoginCallback);
+
+app.get("/api/bookmark", getUserBookmark);
 
 app.post("/api/place", postCreatePlace);
 
