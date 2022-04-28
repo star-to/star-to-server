@@ -13,6 +13,7 @@ const {
   kakaoLoginCallback,
   postCreatePlace,
   getUserBookmark,
+  getReviewContent,
 } = require("./controller");
 const { extractUserDevice } = require("./util");
 
@@ -84,5 +85,7 @@ app.get("/api/my-review", (req, res) => {
 
   res.send(test);
 });
+
+app.get("/api/review-content", getReviewContent);
 
 module.exports = app;

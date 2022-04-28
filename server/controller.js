@@ -167,6 +167,7 @@ const kakaoLoginCallback = async (req, res) => {
 
 const postCreatePlace = (req, res) => {
   const placeList = req.body;
+  if (placeList.length === 0) return res.json({ result: [] });
 
   const query = placeList.reduce(
     (acc, cur) => {
@@ -191,11 +192,19 @@ const postCreatePlace = (req, res) => {
 
 const getUserBookmark = (req, res) => {
   const userId = req.session.user;
-  console.log(userId);
   const query = `select place_id from bookmark where user_id =${userId}`;
 
   return sendQuery(query, (result) => {
     const resultArr = Array.from(result).map((e) => e["place_id"]);
+    return res.json({ result: resultArr });
+  });
+};
+
+const getReviewContent = (req, res) => {
+  const query = `select * from detail_content`;
+
+  return sendQuery(query, (result) => {
+    const resultArr = Array.from(result);
     return res.json({ result: resultArr });
   });
 };
@@ -208,4 +217,5 @@ module.exports = {
   kakaoLoginCallback,
   postCreatePlace,
   getUserBookmark,
+  getReviewContent,
 };
