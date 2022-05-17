@@ -14,6 +14,8 @@ const {
   postCreatePlace,
   getUserBookmark,
   getReviewContent,
+  getReviewMainPlaceId,
+  postReviewInfo,
 } = require("./controller");
 const { extractUserDevice } = require("./util");
 
@@ -87,5 +89,7 @@ app.get("/api/my-review", (req, res) => {
 });
 
 app.get("/api/review-content", getReviewContent);
+
+app.post("/api/review-info", postReviewInfo);
 
 module.exports = app;
