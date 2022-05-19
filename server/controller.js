@@ -209,6 +209,19 @@ const getReviewContent = (req, res) => {
   });
 };
 
+const getReviewMainPlaceId = (req, res) => {};
+
+const postReviewInfo = (req, res) => {
+  req.session.reviewInfo = {
+    todayList: [],
+    mainPlaceId: null,
+  };
+
+  res.status(200);
+};
+
+const patchReviewInfo = (req, res) => {};
+
 module.exports = {
   getCheckAutoLogin,
   getNaverLogin,
@@ -218,4 +231,5 @@ module.exports = {
   postCreatePlace,
   getUserBookmark,
   getReviewContent,
+  postReviewInfo,
 };
