@@ -209,18 +209,39 @@ const getReviewContent = (req, res) => {
   });
 };
 
-const getReviewMainPlaceId = (req, res) => {};
+const getReviewInfo = (req, res) => {
+  console.log(req.session.reviewInfo);
+  if (!req.session.reviewInfo) {
+    req.session.reviewInfo = {
+      reviewedList: [],
+      today: Date.now(),
+    };
+  }
 
-const postReviewInfo = (req, res) => {
-  req.session.reviewInfo = {
-    todayList: [],
-    mainPlaceId: null,
-  };
-
-  res.status(200);
+  res.json({ result: req.session.reviewInfo });
 };
 
-const patchReviewInfo = (req, res) => {};
+const postReviewInfo = (req, res) => {
+  const { reviewedList, today } = req.body;
+  req.session.reviewInfo = {
+    reviewedList,
+    today,
+  };
+
+  res.status(201);
+};
+
+const patchReviewedList = (req, res) => {
+  const { x, y } = req.body;
+  req.session.reviewInfo.reviewedList.push({ x, y });
+  console.log(req.session.reviewInfo.reviewedList);
+  res.json({ reviewedList: req.session.reviewInfo.reviewedList });
+};
+
+const postUserReview = (req, res) => {
+  //TODO: 쿼리 추가해야함!!
+  res.status(201);
+};
 
 module.exports = {
   getCheckAutoLogin,
@@ -231,5 +252,8 @@ module.exports = {
   postCreatePlace,
   getUserBookmark,
   getReviewContent,
+  getReviewInfo,
   postReviewInfo,
+  patchReviewedList,
+  postUserReview,
 };

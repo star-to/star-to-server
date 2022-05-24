@@ -15,7 +15,10 @@ const {
   getUserBookmark,
   getReviewContent,
   getReviewMainPlaceId,
+  getReviewInfo,
   postReviewInfo,
+  patchReviewedList,
+  postUserReview,
 } = require("./controller");
 const { extractUserDevice } = require("./util");
 
@@ -90,6 +93,13 @@ app.get("/api/my-review", (req, res) => {
 
 app.get("/api/review-content", getReviewContent);
 
+app.get("/api/review-info", getReviewInfo);
+
 app.post("/api/review-info", postReviewInfo);
+
+app.patch("/api/review-info", patchReviewedList);
+
+//TODO: 아직 사용안하는데 get 대신 사용해야할지?
+app.post("/api/user-review", postUserReview);
 
 module.exports = app;
