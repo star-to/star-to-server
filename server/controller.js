@@ -232,6 +232,8 @@ const postReviewInfo = (req, res) => {
 };
 
 const patchReviewedList = (req, res) => {
+  if (!req.session.reviewInfo.reviewedList) return;
+
   const { x, y } = req.body;
   req.session.reviewInfo.reviewedList.push({ x, y });
   console.log(req.session.reviewInfo.reviewedList);
@@ -239,8 +241,25 @@ const patchReviewedList = (req, res) => {
 };
 
 const postUserReview = (req, res) => {
-  //TODO: 쿼리 추가해야함!!
-  res.status(201);
+  const { place_id, star, detailReviewIdList } = req.body;
+  const insertReviewQuery = `INSERT INTO review(user_id, place_id, star) VALUES('${req.session.user}','${place_id}','${star}' )`;
+
+  return sendQuery(insertReviewQuery, (result) => {
+    const review_id = result.insertId;
+
+    const insertReviewDetailQuery = detailReviewIdList.reduce(
+      (acc, cur) => {
+        acc += `INSERT INTO review_detail(review_id, detail_content_id, date) VALUES('${review_id}','${cur}',NOW() );`;
+
+        return acc;
+      },
+      ""
+    );
+
+    return sendQuery(insertReviewDetailQuery, () => {
+      res.status(201);
+    });
+  });
 };
 
 module.exports = {
