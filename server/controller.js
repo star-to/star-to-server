@@ -1,4 +1,5 @@
 const axios = require("axios");
+const moment = require("moment");
 const { sendQuery } = require("./db");
 const { extractUserDevice } = require("./util");
 
@@ -242,14 +243,14 @@ const patchReviewedList = (req, res) => {
 
 const postUserReview = (req, res) => {
   const { place_id, star, detailReviewIdList } = req.body;
-  const insertReviewQuery = `INSERT INTO review(user_id, place_id, star) VALUES('${req.session.user}','${place_id}','${star}' )`;
+  const insertReviewQuery = `INSERT INTO review(user_id, place_id, star, date) VALUES('${req.session.user}','${place_id}','${star}', NOW() )`;
 
   return sendQuery(insertReviewQuery, (result) => {
     const review_id = result.insertId;
 
     const insertReviewDetailQuery = detailReviewIdList.reduce(
       (acc, cur) => {
-        acc += `INSERT INTO review_detail(review_id, detail_content_id, date) VALUES('${review_id}','${cur}',NOW() );`;
+        acc += `INSERT INTO review_detail(review_id, detail_content_id) VALUES('${review_id}','${cur}' );`;
 
         return acc;
       },
@@ -259,6 +260,30 @@ const postUserReview = (req, res) => {
     return sendQuery(insertReviewDetailQuery, () => {
       res.status(201);
     });
+  });
+};
+
+const getMyReview = (req, res) => {
+  const query = `select distinct review_id, place_id, star, date, place_name from total_review_info where user_id =${req.session.user} order by date desc;`;
+
+  return sendQuery(query, (result) => {
+    const uniqueDateList = [
+      ...new Set(
+        result.map((review) =>
+          moment(review.date).format("YYYY-MM-DD")
+        )
+      ),
+    ];
+
+    const userReviewInfo = uniqueDateList.reduce((acc, cur) => {
+      const list = result.filter(
+        (review) => moment(review.date).format("YYYY-MM-DD") === cur
+      );
+      acc.push({ date: cur, list });
+      return acc;
+    }, []);
+
+    res.send(userReviewInfo);
   });
 };
 
@@ -275,4 +300,5 @@ module.exports = {
   postReviewInfo,
   patchReviewedList,
   postUserReview,
+  getMyReview,
 };

@@ -19,6 +19,7 @@ const {
   postReviewInfo,
   patchReviewedList,
   postUserReview,
+  getMyReview,
 } = require("./controller");
 const { extractUserDevice } = require("./util");
 
@@ -53,43 +54,7 @@ app.get("/api/bookmark", getUserBookmark);
 
 app.post("/api/place", postCreatePlace);
 
-app.get("/api/my-review", (req, res) => {
-  //TODO: 날짜순으로 정렬해서 응답 줘야 함!
-
-  //TODO: test code
-  const test = [
-    {
-      date: "2021 - 10 - 25",
-      list: [
-        {
-          placeId: 1234,
-          placeName: "카페마스",
-          location: 123,
-          star: 5,
-        },
-        {
-          placeId: 1224,
-          placeName: "컴포즈 커피",
-          location: 234,
-          star: 3,
-        },
-      ],
-    },
-    {
-      date: "2021 - 12 - 23",
-      list: [
-        {
-          placeId: 234,
-          placeName: "투썸플레이스",
-          location: 123,
-          star: 3,
-        },
-      ],
-    },
-  ];
-
-  res.send(test);
-});
+app.get("/api/my-review", getMyReview);
 
 app.get("/api/review-content", getReviewContent);
 
