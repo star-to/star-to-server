@@ -20,6 +20,7 @@ const {
   patchReviewedList,
   postUserReview,
   getMyReview,
+  getPlaceInfo,
 } = require("./controller");
 const { extractUserDevice } = require("./util");
 
@@ -51,6 +52,8 @@ app.get("/api/login/kakao", getKakaoLogin);
 app.get("/api/login/kakao/callback", kakaoLoginCallback);
 
 app.get("/api/bookmark", getUserBookmark);
+
+app.get("/api/place/:id", getPlaceInfo);
 
 app.post("/api/place", postCreatePlace);
 

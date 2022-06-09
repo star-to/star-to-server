@@ -211,7 +211,6 @@ const getReviewContent = (req, res) => {
 };
 
 const getReviewInfo = (req, res) => {
-  console.log(req.session.reviewInfo);
   if (!req.session.reviewInfo) {
     req.session.reviewInfo = {
       reviewedList: [],
@@ -237,7 +236,6 @@ const patchReviewedList = (req, res) => {
 
   const { x, y } = req.body;
   req.session.reviewInfo.reviewedList.push({ x, y });
-  console.log(req.session.reviewInfo.reviewedList);
   res.json({ reviewedList: req.session.reviewInfo.reviewedList });
 };
 
@@ -287,6 +285,48 @@ const getMyReview = (req, res) => {
   });
 };
 
+const getPlaceInfo = (req, res) => {
+  const selectDetailContentList = `select detail_content_id from detail_content;`;
+
+  return sendQuery(selectDetailContentList, (contentList) => {
+    const contentIdList = contentList.map(
+      (content) => content.detail_content_id
+    );
+
+    let bagicQuery = `select star_average from place where place_id="${req.params.id}";
+    select place_id, COUNT(*) as count from total_review_info where place_id="${req.params.id}";`;
+
+    const query = contentIdList.reduce((acc, cur) => {
+      acc += `select detail_content_id, COUNT(*) as count from (SELECT detail_content_id from total_review_info where place_id="${req.params.id}") select_review where detail_content_id ="${cur}";`;
+      return acc;
+    }, bagicQuery);
+
+    return sendQuery(query, (result) => {
+      const response = result.reduce(
+        (acc, [cur]) => {
+          if (cur.hasOwnProperty("detail_content_id")) {
+            acc.contentReviewCountList[cur.detail_content_id] =
+              cur.count;
+            return acc;
+          } else if (cur.hasOwnProperty("star_average")) {
+            acc.star_avg = cur.star_average;
+            return acc;
+          } else {
+            acc.review_count = cur.count;
+            return acc;
+          }
+        },
+        {
+          star_avg: 0,
+          review_count: 0,
+          contentReviewCountList: {},
+        }
+      );
+      res.send(response);
+    });
+  });
+};
+
 module.exports = {
   getCheckAutoLogin,
   getNaverLogin,
@@ -301,4 +341,5 @@ module.exports = {
   patchReviewedList,
   postUserReview,
   getMyReview,
+  getPlaceInfo,
 };
