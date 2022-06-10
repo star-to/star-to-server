@@ -201,6 +201,23 @@ const getUserBookmark = (req, res) => {
   });
 };
 
+const postUserBookmark = (req, res) => {
+  const { placeId } = req.body;
+  const query = `INSERT INTO bookmark(user_id, place_id) VALUES(${req.session.user},${placeId}) `;
+
+  return sendQuery(query, (result) => {
+    return res.status(201);
+  });
+};
+
+const deleteUserBookmark = (req, res) => {
+  const query = `DELETE FROM bookmark WHERE place_id="${req.params.id}" AND user_id="${req.session.user}"`;
+
+  return sendQuery(query, () => {
+    return res.status(200);
+  });
+};
+
 const getReviewContent = (req, res) => {
   const query = `select * from detail_content`;
 
@@ -335,6 +352,8 @@ module.exports = {
   kakaoLoginCallback,
   postCreatePlace,
   getUserBookmark,
+  postUserBookmark,
+  deleteUserBookmark,
   getReviewContent,
   getReviewInfo,
   postReviewInfo,

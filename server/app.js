@@ -13,6 +13,8 @@ const {
   kakaoLoginCallback,
   postCreatePlace,
   getUserBookmark,
+  postUserBookmark,
+  deleteUserBookmark,
   getReviewContent,
   getReviewMainPlaceId,
   getReviewInfo,
@@ -52,6 +54,10 @@ app.get("/api/login/kakao", getKakaoLogin);
 app.get("/api/login/kakao/callback", kakaoLoginCallback);
 
 app.get("/api/bookmark", getUserBookmark);
+
+app.post("/api/bookmark", postUserBookmark);
+
+app.delete("/api/bookmark/:id", deleteUserBookmark);
 
 app.get("/api/place/:id", getPlaceInfo);
 
