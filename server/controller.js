@@ -48,6 +48,8 @@ const naverLoginCallBack = (req, res) => {
     },
   })
     .then(({ data }) => {
+      auth.updateAccessToken(data.access_token);
+      auth.updateFlatform("naver");
       axios({
         method: "get",
         url: "https://openapi.naver.com/v1/nid/me",
@@ -170,20 +172,42 @@ const kakaoLoginCallback = async (req, res) => {
   }
 };
 
-const getLogout = (req, res) => {
+const getLogout = async (req, res) => {
   const flatform = auth.getFlatform();
 
-  const url =
-    flatform === "kakao"
-      ? `https://kauth.kakao.com/oauth/logout?client_id=${process.env.KAKAO_CLIENT_ID}&logout_redirect_uri=${process.env.KAKAO_LOGOUT_REDIRECT_URL}`
-      : ``;
+  if (flatform === "kakao") {
+    const url = `https://kauth.kakao.com/oauth/logout?client_id=${process.env.KAKAO_CLIENT_ID}&logout_redirect_uri=${process.env.KAKAO_LOGOUT_REDIRECT_URL}`;
+    return res.send(url);
+  }
 
-  return res.send(url);
+  if (flatform === "naver") {
+    const response = await naverLogout();
+    if (response.data.result === "success") {
+      req.session.user = null;
+    }
+
+    //TODO: 성공이 아니면 에러페이지로 넘어가게 했으면 좋겠음
+    return res.send("/");
+  }
 };
 
 const kakaoLogoutCallback = (req, res) => {
   req.session.user = null;
   return res.redirect(process.env.HOST_NAME);
+};
+
+const naverLogout = () => {
+  const url = `https://nid.naver.com/oauth2.0/token?grant_type=delete&client_id=${
+    process.env.NAVER_CLIENT_ID
+  }&client_secret=${
+    process.env.NAVER_CLIENT_SECRETS
+  }&access_token=${auth.getAccessToken()}&service_provider=NAVER`;
+
+  return axios({
+    method: "GET",
+    url,
+    headers: { "Content-type": "application/x-www-form-urlencoded" },
+  });
 };
 
 const postCreatePlace = (req, res) => {
