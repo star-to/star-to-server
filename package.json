@@ -6,7 +6,8 @@
   "scripts": {
     "start": "nodemon -e js --exec npm run app",
     "app": "bash ./script.sh",
-    "build": "npm install | nodemon server/init.js"
+    "build": "npm install | nodemon server/init.js",
+    "test": "node server/init.js"
   },
   "repository": {
     "type": "git",

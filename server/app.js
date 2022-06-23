@@ -23,6 +23,8 @@ const {
   postUserReview,
   getMyReview,
   getPlaceInfo,
+  getLogout,
+  kakaoLogoutCallback,
 } = require("./controller");
 const { extractUserDevice } = require("./util");
 
@@ -38,7 +40,7 @@ app.use(
 
 app.use(
   cors({
-    origin: ["http://localhost:9000", process.env.HOST_NAME],
+    origin: [process.env.HOST_NAME],
     optionsSuccessStatus: 200,
   })
 );
@@ -52,6 +54,10 @@ app.get("/api/login/naver/callback", naverLoginCallBack);
 app.get("/api/login/kakao", getKakaoLogin);
 
 app.get("/api/login/kakao/callback", kakaoLoginCallback);
+
+app.get("/api/logout", getLogout);
+
+app.get("/api/logout/kakao/callback", kakaoLogoutCallback);
 
 app.get("/api/bookmark", getUserBookmark);
 

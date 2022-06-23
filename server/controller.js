@@ -2,6 +2,8 @@ const axios = require("axios");
 const moment = require("moment");
 const { sendQuery } = require("./db");
 const { extractUserDevice } = require("./util");
+const Auth = require("./auth");
+const auth = Auth();
 
 const getCheckAutoLogin = (req, res) => {
   let isLogin = false;
@@ -52,12 +54,12 @@ const naverLoginCallBack = (req, res) => {
         headers: { Authorization: `Bearer ${data.access_token}` },
       })
         .then(({ data }) => {
-          //TODO: db 저장 코드 추가2
           const { response } = data;
           const userDevice = extractUserDevice(req);
           // , gender, age,birth
-          const findIdQuery = `SELECT user_id, access_device from user where flatform_id='${response.id}'`;
-          const inputInfoQuery = `INSERT INTO user(flatform_id, nickname, login_flatform, auto_login,access_device, last_access_date ) VALUES('${response.id}','${response.name}','naver',false,'${userDevice}', NOW() )`;
+          const findIdQuery = `SELECT user_id, access_device from user where flatform_id='${response.id}';`;
+          const inputInfoQuery = `INSERT INTO user(flatform_id, nickname, login_flatform, auto_login,access_device, last_access_date) 
+          VALUES('${response.id}','${response.name}','naver',false,'${userDevice}', NOW() );`;
 
           sendQuery(findIdQuery, (result) => {
             if (result.length === 0) {
@@ -114,6 +116,8 @@ const kakaoLoginCallback = async (req, res) => {
     });
 
     const { access_token } = authInfo.data;
+    auth.updateAccessToken(access_token);
+    auth.updateFlatform("kakao");
 
     const userInfo = await axios({
       method: "get",
@@ -128,7 +132,7 @@ const kakaoLoginCallback = async (req, res) => {
     const userDevice = extractUserDevice(req);
 
     const findIdQuery = `SELECT user_id, access_device from user where flatform_id='${id}'`;
-    const inputInfoQuery = `INSERT INTO user(flatform_id, nickname, login_flatform, auto_login,access_device, last_access_date ) VALUES('${id}','${properties.nickname}','naver',false,'${userDevice}', NOW() )`;
+    const inputInfoQuery = `INSERT INTO user(flatform_id, nickname, login_flatform, auto_login,access_device, last_access_date) VALUES('${id}','${properties.nickname}','kakao',false,'${userDevice}', NOW() )`;
 
     return sendQuery(findIdQuery, (result) => {
       if (result.length === 0) {
@@ -164,6 +168,22 @@ const kakaoLoginCallback = async (req, res) => {
   } catch (e) {
     console.error(`사용자 인증에 실패했습니다.[${e}]`);
   }
+};
+
+const getLogout = (req, res) => {
+  const flatform = auth.getFlatform();
+
+  const url =
+    flatform === "kakao"
+      ? `https://kauth.kakao.com/oauth/logout?client_id=${process.env.KAKAO_CLIENT_ID}&logout_redirect_uri=${process.env.KAKAO_LOGOUT_REDIRECT_URL}`
+      : ``;
+
+  return res.send(url);
+};
+
+const kakaoLogoutCallback = (req, res) => {
+  req.session.user = null;
+  return res.redirect(process.env.HOST_NAME);
 };
 
 const postCreatePlace = (req, res) => {
@@ -361,4 +381,6 @@ module.exports = {
   postUserReview,
   getMyReview,
   getPlaceInfo,
+  getLogout,
+  kakaoLogoutCallback,
 };
