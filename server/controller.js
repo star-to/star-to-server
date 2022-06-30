@@ -237,11 +237,10 @@ const postCreatePlace = (req, res) => {
 
 const getUserBookmark = (req, res) => {
   const userId = req.session.user;
-  const query = `select place_id from bookmark where user_id =${userId}`;
+  const query = `select place_id, place_name, position_x, position_y, star_average from bookmark_place_info where user_id =${userId}`;
 
   return sendQuery(query, (result) => {
-    const resultArr = Array.from(result).map((e) => e["place_id"]);
-    return res.json({ result: resultArr });
+    return res.json({ result });
   });
 };
 
