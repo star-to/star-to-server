@@ -354,10 +354,10 @@ const getPlaceInfo = (req, res) => {
     );
 
     let bagicQuery = `select star_average from place where place_id="${req.params.id}";
-    select place_id, COUNT(*) as count from total_review_info where place_id="${req.params.id}";`;
+    select place_id, COUNT(*) as count from review where place_id="${req.params.id}";`;
 
     const query = contentIdList.reduce((acc, cur) => {
-      acc += `select detail_content_id, COUNT(*) as count from (SELECT detail_content_id from total_review_info where place_id="${req.params.id}") select_review where detail_content_id ="${cur}";`;
+      acc += `select detail_content_id, COUNT(*) as detailCount from (SELECT detail_content_id from total_review_info where place_id="${req.params.id}") select_review where detail_content_id ="${cur}";`;
       return acc;
     }, bagicQuery);
 
@@ -366,7 +366,7 @@ const getPlaceInfo = (req, res) => {
         (acc, [cur]) => {
           if (cur.hasOwnProperty("detail_content_id")) {
             acc.contentReviewCountList[cur.detail_content_id] =
-              cur.count;
+              cur.detailCount;
             return acc;
           } else if (cur.hasOwnProperty("star_average")) {
             acc.star_avg = cur.star_average;
