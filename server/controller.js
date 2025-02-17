@@ -149,6 +149,7 @@ const kakaoLoginCallback = async (req, res) => {
       }
 
       req.session.user = result[0]["user_id"];
+      console.log(`MyName is ${req.session.user}`);
       const equalDevice = result[0]["access_device"] === userDevice;
 
       if (equalDevice) return res.redirect(process.env.HOST_NAME);
@@ -177,17 +178,14 @@ const getLogout = async (req, res) => {
   const flatform = auth.getFlatform();
 
   if (flatform === "kakao") {
-    const url = `https://kauth.kakao.com/oauth/logout?client_id=${process.env.KAKAO_CLIENT_ID}&logout_redirect_uri=${process.env.KAKAO_LOGOUT_REDIRECT_URL}`;
-    return res.send(url);
+    await kakaoLogout();
+    req.session.user = null;
+    return res.send("/");
   }
 
   if (flatform === "naver") {
-    const response = await naverLogout();
-    if (response.data.result === "success") {
-      req.session.user = null;
-    }
-
-    //TODO: 성공이 아니면 에러페이지로 넘어가게 했으면 좋겠음
+    await naverLogout();
+    req.session.user = null;
     return res.send("/");
   }
 };
@@ -195,6 +193,19 @@ const getLogout = async (req, res) => {
 const kakaoLogoutCallback = (req, res) => {
   req.session.user = null;
   return res.redirect(process.env.HOST_NAME);
+};
+
+const kakaoLogout = () => {
+  const url = "https://kapi.kakao.com/v1/user/logout";
+
+  return axios({
+    method: "post",
+    url,
+    headers: {
+      Authorization: `Bearer ${auth.getAccessToken()}`,
+      "Content-type": "application/x-www-form-urlencoded",
+    },
+  });
 };
 
 const naverLogout = () => {
