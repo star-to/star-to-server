@@ -10,7 +10,8 @@ const getCheckAutoLogin = (req, res) => {
   const userDevice = extractUserDevice(req);
   req.session.reAuth = false;
   if (req.session.user) {
-    const query = `select user_id from user where user_id='${req.session.user}' and access_device='${userDevice}'`;
+    const query = `select user_id from user where user_id='${req.session.user}' `;
+    // and access_device='${userDevice}'
     try {
       return sendQuery(query, (result) => {
         if (result.length === 0) {
