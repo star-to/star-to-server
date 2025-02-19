@@ -19,7 +19,6 @@ const getCheckAutoLogin = (req, res) => {
           req.session.reAuth = true;
           return res.json({ isLogin });
         }
-
         isLogin = true;
         return res.json({ isLogin });
       });
@@ -33,70 +32,79 @@ const getCheckAutoLogin = (req, res) => {
 
 const getNaverLogin = (req, res) => {
   let api_url = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${process.env.NAVER_CLIENT_ID}&redirect_uri=${process.env.NAVER_REDIRECT_URL}&state=${process.env.STATE}`;
-  api_url += req.session.reAuth ? "&auth_type=reauthenticate" : "";
   res.send(api_url);
 };
 
 const naverLoginCallBack = (req, res) => {
-  const { code, state } = req.query;
-  const api_url = `https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&client_id=${process.env.NAVER_CLIENT_ID}&client_secret=${process.env.NAVER_CLIENT_SECRETS}&redirect_uri=${process.env.NAVER_REDIRECT_URL}&code=${code}&state=${process.env.STATE}`;
-  axios({
-    method: "get",
-    url: api_url,
-    headers: {
-      "X-Naver-Client-Id": process.env.NAVER_CLIENT_ID,
-      "X-Naver-Client-Secret": process.env.NAVER_CLIENT_SECRETS,
-    },
-  })
-    .then(({ data }) => {
+  try {
+    const { code, state, error } = req.query;
+
+    // TODO: 프론트엔트에 에러페이지 추가하면 에러페이지로 변경
+    if (error) throw Error("네이버 로그인 에러");
+
+    const api_url = `https://nid.naver.com/oauth2.0/token`;
+    axios({
+      method: "get",
+      url: api_url,
+      headers: {
+        "X-Naver-Client-Id": process.env.NAVER_CLIENT_ID,
+        "X-Naver-Client-Secret": process.env.NAVER_CLIENT_SECRETS,
+      },
+      params: {
+        grant_type: "authorization_code",
+        client_id: process.env.NAVER_CLIENT_ID,
+        client_secret: process.env.NAVER_CLIENT_SECRETS,
+        redirect_uri: process.env.NAVER_REDIRECT_URL,
+        code,
+        state,
+      },
+    }).then(({ data }) => {
       auth.updateAccessToken(data.access_token);
       auth.updateFlatform("naver");
       axios({
         method: "get",
         url: "https://openapi.naver.com/v1/nid/me",
         headers: { Authorization: `Bearer ${data.access_token}` },
-      })
-        .then(({ data }) => {
-          const { response } = data;
-          const userDevice = extractUserDevice(req);
-          // , gender, age,birth
-          const findIdQuery = `SELECT user_id, access_device from user where flatform_id='${response.id}';`;
-          const inputInfoQuery = `INSERT INTO user(flatform_id, nickname, login_flatform, auto_login,access_device, last_access_date) 
-          VALUES('${response.id}','${response.name}','naver',false,'${userDevice}', NOW() );`;
+      }).then(({ data }) => {
+        const { response } = data;
+        const userDevice = extractUserDevice(req);
+        // , gender, age,birth
+        const findIdQuery = `SELECT user_id, access_device from user where flatform_id='${response.id}';`;
+        const inputInfoQuery = `INSERT INTO user(flatform_id, nickname, login_flatform, auto_login,access_device, last_access_date)
+            VALUES('${response.id}','${response.name}','naver',false,'${userDevice}', NOW() );`;
 
-          sendQuery(findIdQuery, (result) => {
-            if (result.length === 0) {
-              return sendQuery(
-                `${inputInfoQuery};${findIdQuery};`,
-                (input) => {
-                  req.session.user = input[0]["user_id"];
-                  return res.redirect(process.env.HOST_NAME);
-                }
-              );
-            } else {
-              req.session.user = result[0]["user_id"];
-
-              const equalDevice =
-                result[0]["access_device"] === userDevice;
-
-              if (!equalDevice) {
-                const deleteQuery = `delete from user where user_id=${result[0]["user_id"]}`;
-                return sendQuery(deleteQuery, (result) => {
-                  return res.redirect(process.env.HOST_NAME);
-                });
-              } else {
+        sendQuery(findIdQuery, (result) => {
+          if (result.length === 0) {
+            return sendQuery(
+              `${inputInfoQuery};${findIdQuery};`,
+              (input) => {
+                req.session.user = input[0]["user_id"];
                 return res.redirect(process.env.HOST_NAME);
               }
+            );
+          } else {
+            req.session.user = result[0]["user_id"];
+
+            const equalDevice =
+              result[0]["access_device"] === userDevice;
+
+            if (!equalDevice) {
+              const deleteQuery = `delete from user where user_id=${result[0]["user_id"]}`;
+              return sendQuery(deleteQuery, (result) => {
+                return res.redirect(process.env.HOST_NAME);
+              });
+            } else {
+              return res.redirect(process.env.HOST_NAME);
             }
-          });
-        })
-        .then((err) => {
-          console.log(err);
+          }
         });
-    })
-    .catch((error) => {
-      console.log(error);
+      });
     });
+  } catch (e) {
+    console.error(`사용자 인증에 실패했습니다.[${e}]`);
+    req.session.user = null;
+    return res.redirect(process.env.HOST_NAME);
+  }
 };
 
 const getKakaoLogin = (req, res) => {
@@ -105,10 +113,11 @@ const getKakaoLogin = (req, res) => {
 };
 
 const kakaoLoginCallback = async (req, res) => {
-  const { code, state } = req.query;
-  const api_url = "https://kauth.kakao.com/oauth/token";
-
   try {
+    const { code, error } = req.query;
+    if (error) throw Error("카카오 로그인 에러");
+
+    const api_url = "https://kauth.kakao.com/oauth/token";
     const authInfo = await axios({
       method: "post",
       url: api_url,
@@ -149,7 +158,6 @@ const kakaoLoginCallback = async (req, res) => {
       }
 
       req.session.user = result[0]["user_id"];
-      console.log(`MyName is ${req.session.user}`);
       const equalDevice = result[0]["access_device"] === userDevice;
 
       if (equalDevice) return res.redirect(process.env.HOST_NAME);
@@ -165,12 +173,13 @@ const kakaoLoginCallback = async (req, res) => {
             "Content-type": "application/x-www-form-urlencoded",
           },
         });
-        //TODO: 예외처리 하기
         return res.redirect(process.env.HOST_NAME);
       });
     });
   } catch (e) {
     console.error(`사용자 인증에 실패했습니다.[${e}]`);
+    req.session.user = null;
+    return res.redirect(process.env.HOST_NAME);
   }
 };
 
